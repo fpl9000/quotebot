@@ -65,26 +65,26 @@ func readQuotesFromFile(filename string) ([]string, error) {
 
 // showHelp displays usage information and exits.
 func showHelp() {
-	fmt.Println("quotebot - A random quote generator")
-	fmt.Println()
-	fmt.Println("USAGE:")
-	fmt.Println("  quotebot [OPTIONS] [FILE]")
-	fmt.Println()
-	fmt.Println("DESCRIPTION:")
-	fmt.Println("  Displays a randomly selected quote. By default, uses built-in quotes")
-	fmt.Println("  embedded in the executable. If a file is specified, quotes are read")
-	fmt.Println("  from that file instead. Each quote in the file should be on a separate line.")
-	fmt.Println()
-	fmt.Println("OPTIONS:")
-	fmt.Println("  -h, --help    Show this help message and exit")
-	fmt.Println()
-	fmt.Println("ARGUMENTS:")
-	fmt.Println("  FILE          Optional path to a file containing quotes")
-	fmt.Println()
-	fmt.Println("EXAMPLES:")
-	fmt.Println("  quotebot                 # Use embedded quotes")
-	fmt.Println("  quotebot quotes.txt      # Use quotes from quotes.txt")
-	fmt.Println("  quotebot -h              # Show this help")
+	fmt.Println(`quotebot - A random quote generator
+
+USAGE:
+  quotebot [OPTIONS] [FILE]
+
+DESCRIPTION:
+  Displays a randomly selected quote. By default, uses built-in quotes
+  embedded in the executable. If a file is specified, quotes are read
+  from that file instead. Each quote in the file should be on a separate line.
+
+OPTIONS:
+  -h, --help    Show this help message and exit
+
+ARGUMENTS:
+  FILE          Optional path to a file containing quotes
+
+EXAMPLES:
+  quotebot                 # Use embedded quotes
+  quotebot quotes.txt      # Use quotes from quotes.txt
+  quotebot -h              # Show this help`)
 	os.Exit(0)
 }
 
@@ -92,22 +92,29 @@ func main() {
 	var quotes []string
 	var err error
 
-	// Check for help flags first.
-	if len(os.Args) > 1 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
-		showHelp()
-	}
-
-	// Check if a file path was provided as a command-line argument.
+	// Process command-line arguments.
 	if len(os.Args) > 1 {
-		// Use quotes from the specified file.
-		filename := os.Args[1]
-		quotes, err = readQuotesFromFile(filename)
+		arg := os.Args[1]
+
+		// Check for help flags.
+		if arg == "-h" || arg == "--help" {
+			showHelp()
+		}
+
+		// Check if the argument is an unrecognized switch (starts with - or --).
+		if strings.HasPrefix(arg, "-") {
+			fmt.Fprintf(os.Stderr, "Error: unrecognized option '%s'\n\n", arg)
+			showHelp()
+		}
+
+		// Treat the argument as a filename.
+		quotes, err = readQuotesFromFile(arg)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error reading quotes from %s: %v\n", filename, err)
+			fmt.Fprintf(os.Stderr, "Error reading quotes from %s: %v\n", arg, err)
 			os.Exit(1)
 		}
 	} else {
-		// Use embedded quotes.
+		// Use embedded quotes when no arguments are provided.
 		quotes, err = loadEmbeddedQuotes()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error loading embedded quotes: %v\n", err)
